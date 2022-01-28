@@ -27,7 +27,7 @@ class Compass {
   ///Returns a stream to receive the compass updates.
   ///
   ///Remember to close the stream after using it.
-  Stream<double> compassUpdates({Duration interval, double azimuthFix}) =>
+  Stream<double> compassUpdates({Duration? interval, double? azimuthFix}) =>
       _compass.compassUpdates(interval, azimuthFix);
 
   /// Checks if the sensors needed for the compass to work are available.

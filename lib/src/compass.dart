@@ -5,23 +5,23 @@ class _Compass {
   double _azimuth = 0.0;
   double azimuthFix = 0.0;
   final List<_CompassStreamSubscription> _updatesSubscriptions = [];
-  StreamSubscription<SensorEvent> _rotationSensorStream;
+  StreamSubscription<SensorEvent>? _rotationSensorStream;
   StreamController<double> _internalUpdateController =
       StreamController.broadcast();
 
   /// Starts the compass updates.
-  Stream<double> compassUpdates(Duration interval, double azimuthFix) {
+  Stream<double> compassUpdates(Duration? interval, double? azimuthFix) {
     this.azimuthFix = azimuthFix ?? this.azimuthFix;
     // ignore: close_sinks
-    StreamController<double> compassStreamController;
-    _CompassStreamSubscription compassStreamSubscription;
+    StreamController<double>? compassStreamController;
+    _CompassStreamSubscription? compassStreamSubscription;
     // ignore: cancel_subscriptions
     StreamSubscription<double> compassSubscription =
         _internalUpdateController.stream.listen((value) {
       if (interval != null) {
         DateTime instant = DateTime.now();
         int difference = instant
-            .difference(compassStreamSubscription.lastUpdated)
+            .difference(compassStreamSubscription!.lastUpdated!)
             .inMicroseconds;
         if (difference < interval.inMicroseconds) {
           return;
@@ -29,7 +29,7 @@ class _Compass {
           compassStreamSubscription.lastUpdated = instant;
         }
       }
-      compassStreamController.add(value);
+      compassStreamController!.add(value);
     });
     compassSubscription.onDone(() {
       _updatesSubscriptions.remove(compassStreamSubscription);
@@ -42,7 +42,7 @@ class _Compass {
         _startSensor();
       },
       onCancel: () {
-        compassStreamSubscription.subscription.cancel();
+        compassStreamSubscription?.subscription.cancel();
         _updatesSubscriptions.remove(compassStreamSubscription);
         if (_updatesSubscriptions.isEmpty) _stopSensor();
       },
@@ -90,7 +90,7 @@ class _Compass {
   /// Stops the sensors updates subscribed.
   void _stopSensor() {
     if (_sensorStarted()) {
-      _rotationSensorStream.cancel();
+      _rotationSensorStream!.cancel();
       _rotationSensorStream = null;
     }
   }
@@ -137,7 +137,7 @@ class _Compass {
   ///
   /// Returns a list with the result of the orientation.
   List<double> _computeOrientation() {
-    List<double> orientation = List(3);
+    List<double> orientation = List.filled(3, 0);
     orientation[0] = atan2(_rotationMatrix[1], _rotationMatrix[4]);
     orientation[1] = asin(-_rotationMatrix[7]);
     orientation[2] = atan2(-_rotationMatrix[6], _rotationMatrix[8]);
@@ -151,7 +151,7 @@ class _CompassStreamSubscription {
   StreamSubscription subscription;
 
   /// Date of the last update.
-  DateTime lastUpdated;
+  DateTime? lastUpdated;
 
   _CompassStreamSubscription(this.subscription) {
     this.lastUpdated = DateTime.now();
